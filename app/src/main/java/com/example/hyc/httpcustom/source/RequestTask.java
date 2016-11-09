@@ -6,6 +6,8 @@ import android.os.Looper;
 import com.example.hyc.httpcustom.utils.esprossoUtils.EsprossoIdelResource;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -39,12 +41,12 @@ public class RequestTask {
         @Override
         public void run() {
             try {
-                final String response = HttpConnectUtil.execute(_request);
+                final HttpURLConnection conn  = HttpConnectUtil.execute(_request);
+                final Object            parse = _request._iCallback.parse(conn);
                 _handler.post(new Runnable() {
                     @Override
                     public void run() {
-
-                        _request._iCallback.onSuccessed(response);
+                        _request._iCallback.onSuccessed(parse);
                         EsprossoIdelResource.decrement();
                     }
                 });

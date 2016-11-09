@@ -1,7 +1,6 @@
 package com.example.hyc.httpcustom.source;
 
 
-
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -17,7 +16,7 @@ import java.net.URLConnection;
  */
 public class HttpConnectUtil {
 
-    public static String execute(Request request) throws IOException {
+    public static HttpURLConnection execute(Request request) throws IOException {
 
         switch (request.getMethod()) {
             case GET:
@@ -33,7 +32,7 @@ public class HttpConnectUtil {
     }
 
 
-    private static String get(Request request) throws IOException {
+    private static HttpURLConnection get(Request request) throws IOException {
         URL               url;
         HttpURLConnection conn;
         try {
@@ -43,26 +42,19 @@ public class HttpConnectUtil {
             conn.setConnectTimeout(request.getTimeout());
             conn.setRequestMethod(request.getMethodName());
             conn.setRequestProperty("Content-Type", "application/json");
-
-
-            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                return null;
-            }
-            ICallback iCallback = request._iCallback;
-            Type[]    interfaces = iCallback.getClass().getGenericInterfaces();
-            for (int i = 0; i < interfaces.length; i++) {
-                System.out.print(interfaces[i]+" ");
-            }
-            Type      genericSuperclass = iCallback.getClass().getGenericSuperclass();
-            System.out.println("genericSuperclass = " + genericSuperclass);
-            return getResponse(conn);
+            return conn;
         } catch (IOException err) {
-
             throw new IOException(err);
         }
 
     }
 
+    /**
+     * 读取数据流
+     *
+     * @return
+     * @throws IOException
+     */
     private static String getResponse(URLConnection connection) throws IOException {
         InputStream  in  = new BufferedInputStream(connection.getInputStream());
         OutputStream os  = new ByteArrayOutputStream();
@@ -77,8 +69,8 @@ public class HttpConnectUtil {
         return os.toString();
     }
 
-    private static String post(Request request) throws IOException {
-        URL               url ;
+    private static HttpURLConnection post(Request request) throws IOException {
+        URL               url;
         HttpURLConnection conn;
         try {
             url = new URL(request.url);
@@ -87,13 +79,14 @@ public class HttpConnectUtil {
             conn.setConnectTimeout(request.getTimeout());
             conn.setRequestMethod(request.getMethodName());
             //这里请求头要修改  不能为json
-//            conn.setRequestProperty("Content-Type", "application/json");
+            // conn.setRequestProperty("Content-Type", "application/json");
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
             OutputStream os = conn.getOutputStream();
             os.write(request.getContent().getBytes());
             os.flush();
-            return getResponse(conn);
+
+            return conn;
         } catch (IOException err) {
             throw new IOException(err);
         }
