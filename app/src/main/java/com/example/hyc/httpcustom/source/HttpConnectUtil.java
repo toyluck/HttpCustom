@@ -25,7 +25,6 @@ public class HttpConnectUtil {
         if (!URLUtil.isNetworkUrl(request.getUrl())) {
             throw new AppException(AppException.ExceptionType.MANUL, "url does't fit!!!");
         }
-        request.checkCanceld();
         switch (request.getMethod()) {
             case GET:
                 return get(request);

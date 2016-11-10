@@ -56,14 +56,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        String  downloadpath = file.getAbsolutePath();
+        String downloadpath = file.getAbsolutePath();
 
         //get Path
-        path="https://www.youtube.com";
+        path = "https://www.youtube.com";
 
-        _request = new Request.Build().baseUrl(path).method(GET).setContent(content).build();
+        _request = new Request.Build(this).baseUrl(path).method(GET).setContent(content).build();
         _request.setGlobalRequestListerner(this);
         _request.setiCallback(new FileCallback(downloadpath) {
+
+
             @Override
             public void onSuccessed(String response) {
                 System.out.println("response = " + response);
@@ -86,6 +88,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             }
         });
 
-        new RequestTask().addTask(_request);
+        _request.execute();
     }
 }

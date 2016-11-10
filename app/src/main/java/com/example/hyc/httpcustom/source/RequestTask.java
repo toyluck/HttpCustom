@@ -7,15 +7,14 @@ import android.util.Log;
 
 import com.example.hyc.httpcustom.utils.esprossoUtils.EsprossoIdelResource;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URLConnection;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by hyc on 16-11-9.
+ * 执行线程操作
  */
 public class RequestTask {
 
@@ -28,12 +27,15 @@ public class RequestTask {
 
     public void addTask(Request request) {
         DefaultTask task = new DefaultTask(request);
+
         _executors.execute(task);
+
     }
 
 
     private static class DefaultTask implements Runnable {
 
+        private static final int FROMCACHE = 0x33;
         private final Request _request;
         static final int SUCCESED = 0x11;
         static final int FAILUED  = 0x22;
@@ -50,6 +52,9 @@ public class RequestTask {
                         AppException exception = (AppException) msg.obj;
                         _request.globalCatch(exception);
 
+                        break;
+                    case FROMCACHE:
+                        _request._iCallback.onFromCache(msg.obj);
                         break;
                 }
             }
@@ -69,20 +74,30 @@ public class RequestTask {
         private void request() {
             try {
                 EsprossoIdelResource.increment();
+
+                _request.checkCanceld();
+
                 final HttpURLConnection conn = HttpConnectUtil.execute(_request);
 
                 _request.checkCanceld();
 
-                _handler.obtainMessage(SUCCESED, _request._iCallback.parse(conn)).sendToTarget();
-                EsprossoIdelResource.decrement();
+                //先检查数据库后 再去网络请求
+                Object fromCache = _request._iCallback.checkAndGetDataFromCache();
+                if (fromCache != null) {
+                    _handler.obtainMessage(FROMCACHE, fromCache);
+                }
+
+                Object obj = _request._iCallback.parse(conn);
+
+                _handler.obtainMessage(SUCCESED, obj).sendToTarget();
+
             } catch (final AppException e) {
-                EsprossoIdelResource.decrement();
                 switch (e.getExceptionType()) {
                     case REQ_TIMEOUT:
                     case RES_TIMEOUT:
                         //超时操作都要进行重新请求
                         if (_retryCount.getAndIncrement() <= _request.getMaxRetryCount()) {
-                            Log.d(TAG, "request: has retry for"+_retryCount.get());
+                            Log.d(TAG, "request: has retry for" + _retryCount.get());
                             request();
                         }
                         return;
@@ -91,6 +106,10 @@ public class RequestTask {
                 }
                 _handler.obtainMessage(FAILUED, e).sendToTarget();
                 e.printStackTrace();
+            } finally {
+
+                EsprossoIdelResource.decrement();
+
             }
         }
     }

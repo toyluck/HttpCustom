@@ -1,11 +1,16 @@
 package com.example.hyc.httpcustom.source;
 
+import android.content.Context;
+import android.support.v7.app.AppCompatActivity;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by hyc on 16-11-9.
  */
 public class Request {
+    private static final RequestTask REQUEST_TASK = new RequestTask();
+    private final Context _context;
 
     private RequestMethod method;
     private int           _maxRetryCount;
@@ -13,10 +18,12 @@ public class Request {
     private int           _readTimeout;
     private String        _content;
     private volatile AtomicBoolean _canceled = new AtomicBoolean(false);
+    private String _tag;
 
 
     public void setCanceled(boolean canceled) {
         _canceled.set(canceled);
+        _iCallback.cancelReq();
     }
 
     public boolean isCanceled() {
@@ -24,7 +31,8 @@ public class Request {
     }
 
     public void checkCanceld() throws AppException {
-        if (_canceled.getAndSet(false)) {
+        //跟Activity bind lifecycle
+        if (_canceled.getAndSet(false) || (_context != null && ((AppCompatActivity) _context).isFinishing())) {
             _iCallback.cancelReq();
             throw new AppException(AppException.ExceptionType.CANCELD, "Request has been canceld");
         }
@@ -38,6 +46,9 @@ public class Request {
         }
     }
 
+    public void execute() {
+        REQUEST_TASK.addTask(this);
+    }
 
     private GlobalRequestErrListerner _globalRequestListerner;
 
@@ -48,6 +59,15 @@ public class Request {
      */
     public void setGlobalRequestListerner(GlobalRequestErrListerner globalRequestListerner) {
         _globalRequestListerner = globalRequestListerner;
+    }
+
+
+    public void setTag(String tag) {
+        _tag = tag;
+    }
+
+    public String getTag() {
+        return _tag;
     }
 
     public enum RequestMethod {
@@ -72,7 +92,8 @@ public class Request {
 
     String url;
 
-    Request(String url, RequestMethod method, int timeout, int readTimeout, String content, int maxRetryCount) {
+    Request(Context context, String url, RequestMethod method, int timeout, int readTimeout, String content, int maxRetryCount) {
+        _context = context;
         this.url = url;
         this.method = method;
         _timeout = timeout;
@@ -102,14 +123,16 @@ public class Request {
     }
 
     public static class Build {
-        private int           _timeout;
-        private int           _readTimeout;
-        private RequestMethod _method;
-        private String        _url;
-        private String        content;
+        private final Context       _context;
+        private       int           _timeout;
+        private       int           _readTimeout;
+        private       RequestMethod _method;
+        private       String        _url;
+        private       String        content;
         private int _maxRetryCount = 5;
 
-        public Build() {
+        public Build(Context context) {
+            _context = context;
             _timeout = 1 * 1000;
             _readTimeout = 1 * 1000;
             _method = RequestMethod.GET;
@@ -149,7 +172,7 @@ public class Request {
             if (null == _url || "".equals(_url)) {
                 throw new NullPointerException("url can't be null");
             }
-            return new Request(_url, _method, _timeout, _readTimeout, content, _maxRetryCount);
+            return new Request(_context, _url, _method, _timeout, _readTimeout, content, _maxRetryCount);
         }
 
     }

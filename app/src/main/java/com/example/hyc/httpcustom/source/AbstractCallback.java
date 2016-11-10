@@ -28,7 +28,7 @@ public abstract class AbstractCallback<T> implements ICallback<T> {
     private volatile AtomicBoolean _canceld = new AtomicBoolean(false);
 
     @Override
-    public void cancelReq() throws AppException {
+    public void cancelReq() {
         _canceld.set(true);
     }
 
@@ -120,21 +120,40 @@ public abstract class AbstractCallback<T> implements ICallback<T> {
         }
         inputStream.close();
         os.close();
-
         if (TextUtils.isEmpty(_path)) {
             rawResponse = os.toString();
         } else {
             rawResponse = _path;
         }
-        return bindData(rawResponse);
+        T t = bindData(rawResponse);
+        postRequest(t);
+        return t;
+    }
+
+    @Override
+    public void postRequest(T t) {
+    }
+
+    @Override
+    public T checkAndGetDataFromCache() {
+
+        return null;
+    }
+
+    @Override
+    public void onFromCache(T t) {
 
     }
 
+    /**
+     * 检查实现类是否实现了 {@link ProgressListener}
+     *
+     * @return 实现了该接口的实现类
+     */
     @Nullable
     private ProgressListener getProgressListener() {
-        Class<?>[] interfaces = this.getClass().getSuperclass().getInterfaces();
-        System.out.println("interfaces = " + interfaces);
-        System.out.println("this = " + this);
+
+        Class<?>[]       interfaces       = this.getClass().getSuperclass().getInterfaces();
         ProgressListener progressListener = null;
         for (Class<?> anInterface : interfaces) {
             if (anInterface == ProgressListener.class) {

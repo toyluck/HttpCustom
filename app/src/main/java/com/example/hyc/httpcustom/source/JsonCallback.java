@@ -12,11 +12,11 @@ import java.lang.reflect.Type;
  * Created by hyc on 2016/11/10.
  */
 
-public abstract class JsonCallback<T> extends AbstractCallback<T> implements ProgressListener {
+public abstract class JsonCallback<T> extends AbstractCallback<T> {
     @Override
     protected T bindData(String rawResponse) throws JSONException {
         JSONObject jsonObject = new JSONObject(rawResponse);
-        JSONObject data       = jsonObject.getJSONObject("data");
+        Object     data       = jsonObject.opt("data");
 
         Type type = ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
         Gson gson = new Gson();
@@ -24,8 +24,5 @@ public abstract class JsonCallback<T> extends AbstractCallback<T> implements Pro
 
     }
 
-    @Override
-    public void onProgress(long currerntCount, long totalCount) {
 
-    }
 }
