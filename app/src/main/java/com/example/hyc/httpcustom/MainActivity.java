@@ -1,5 +1,6 @@
 package com.example.hyc.httpcustom;
 
+import android.support.annotation.UiThread;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -62,11 +63,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 System.out.println("err.getMessage() = " + err.getMessage());
             }
 
+            @UiThread
             @Override
             public void onProgress(long currerntCount, long totalCount) {
                 super.onProgress(currerntCount, totalCount);
-                System.out.println("currerntCount = " + currerntCount);
-                System.out.println("totalCount = " + totalCount);
+                System.out.println("currerntCount = [" + currerntCount + "], totalCount = [" + totalCount + "]");
+                System.out.println("Thread.currentThread() = " + Thread.currentThread());
             }
         });
 

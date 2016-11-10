@@ -17,6 +17,7 @@ public abstract class FileCallback extends AbstractCallback<String> implements P
     public FileCallback(String path) {
 
         setPath(path);
+
     }
 
     @Override
