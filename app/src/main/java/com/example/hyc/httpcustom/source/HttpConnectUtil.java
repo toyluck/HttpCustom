@@ -16,7 +16,7 @@ import java.net.URLConnection;
  */
 public class HttpConnectUtil {
 
-    public static HttpURLConnection execute(Request request) throws IOException {
+    public static HttpURLConnection execute(Request request) throws AppException {
 
         switch (request.getMethod()) {
             case GET:
@@ -32,7 +32,7 @@ public class HttpConnectUtil {
     }
 
 
-    private static HttpURLConnection get(Request request) throws IOException {
+    private static HttpURLConnection get(Request request) throws AppException {
         URL               url;
         HttpURLConnection conn;
         try {
@@ -44,7 +44,7 @@ public class HttpConnectUtil {
             conn.setRequestProperty("Content-Type", "application/json");
             return conn;
         } catch (IOException err) {
-            throw new IOException(err);
+            throw new AppException(err.getMessage());
         }
 
     }
@@ -69,7 +69,7 @@ public class HttpConnectUtil {
         return os.toString();
     }
 
-    private static HttpURLConnection post(Request request) throws IOException {
+    private static HttpURLConnection post(Request request) throws AppException {
         URL               url;
         HttpURLConnection conn;
         try {
@@ -88,7 +88,7 @@ public class HttpConnectUtil {
 
             return conn;
         } catch (IOException err) {
-            throw new IOException(err);
+            throw new AppException(err);
         }
     }
 }

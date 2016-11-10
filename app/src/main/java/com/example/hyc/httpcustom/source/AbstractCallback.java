@@ -13,6 +13,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 
@@ -42,17 +43,30 @@ public abstract class AbstractCallback<T> implements ICallback<T> {
 
     @Override
     @WorkerThread
-    public T parse(HttpURLConnection connection) {
+    public T parse(HttpURLConnection connection) throws AppException {
 
         try {
             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 return listRequest(connection);
             } else {
-                return null;
+                InputStream           errorStream = connection.getErrorStream();
+                byte[]                buf         = new byte[2048];
+                int                   len         = 0;
+                ByteArrayOutputStream bao         = new ByteArrayOutputStream();
+                while ((len = errorStream.read(buf)) != -1) {
+                    bao.write(buf, 0, len);
+                    bao.flush();
+                }
+
+                bao.close();
+
+                throw new AppException(connection.getResponseCode() , connection.getResponseMessage() + " " +
+                        "~|~ " + bao.toString() + " ~|~ ");
             }
         } catch (Exception e) {
-            onFailure(e);
-            return null;
+            throw new AppException(e.getMessage() + " ~|~ " + e.getLocalizedMessage() + " ~|~ " + e
+                    .getCause() + " ~|~ ");
+
         }
     }
 

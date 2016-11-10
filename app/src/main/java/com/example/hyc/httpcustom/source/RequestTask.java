@@ -50,7 +50,7 @@ public class RequestTask {
                         EsprossoIdelResource.decrement();
                     }
                 });
-            } catch (final IOException e) {
+            } catch (final AppException e) {
                 EsprossoIdelResource.decrement();
                 _handler.post(new Runnable() {
                     @Override

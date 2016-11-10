@@ -9,6 +9,6 @@ public interface ICallback<T> {
 
     void onSuccessed(T response);
 
-    void onFailure(Exception err);
-    T parse(HttpURLConnection connection);
+    void onFailure(AppException err);
+    T parse(HttpURLConnection connection) throws AppException;
 }

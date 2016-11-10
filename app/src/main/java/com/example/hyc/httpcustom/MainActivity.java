@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.example.hyc.httpcustom.models.User;
+import com.example.hyc.httpcustom.source.AppException;
 import com.example.hyc.httpcustom.source.FileCallback;
 import com.example.hyc.httpcustom.source.JsonCallback;
 import com.example.hyc.httpcustom.source.Request;
@@ -36,8 +37,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void request(final Button v) {
         EsprossoIdelResource.increment();
         String path = "http://www.163.com/";
-        path = "http://api.stay4it.com/v1/public/core/?service=user.login";
-        String content = "account=stay4it&password=123456";
+        path = "http://api.stay4it2.com/v1/public/core/?service=user.login";
+        String content = "account=stay4it&password=1234562";
         String parent  = getExternalCacheDir() + "/download";
         new File(parent).mkdirs();
         File file = new File(parent, "user.txt");
@@ -59,8 +60,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             @Override
-            public void onFailure(Exception err) {
-                System.out.println("err.getMessage() = " + err.getMessage());
+            public void onFailure(AppException err) {
+                System.out.println("err.getMessage() = " + err.toString());
+
             }
 
             @UiThread
