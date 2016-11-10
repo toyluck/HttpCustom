@@ -6,7 +6,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.example.hyc.httpcustom.models.User;
-import com.example.hyc.httpcustom.source.AbstractCallback;
+import com.example.hyc.httpcustom.source.FileCallback;
 import com.example.hyc.httpcustom.source.JsonCallback;
 import com.example.hyc.httpcustom.source.Request;
 import com.example.hyc.httpcustom.source.RequestTask;
@@ -39,8 +39,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String content = "account=stay4it&password=123456";
         String parent  = getExternalCacheDir() + "/download";
         new File(parent).mkdirs();
-        File   file    = new File(parent, "user.txt");
+        File file = new File(parent, "user.txt");
         try {
+            if (file.exists()) file.delete();
             file.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
@@ -59,6 +60,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onFailure(Exception err) {
                 System.out.println("err.getMessage() = " + err.getMessage());
+            }
+
+            @Override
+            public void onProgress(long currerntCount, long totalCount) {
+                super.onProgress(currerntCount, totalCount);
+                System.out.println("currerntCount = " + currerntCount);
+                System.out.println("totalCount = " + totalCount);
             }
         });
 

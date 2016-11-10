@@ -1,6 +1,5 @@
-package com.example.hyc.httpcustom;
+package com.example.hyc.httpcustom.source;
 
-import com.example.hyc.httpcustom.source.AbstractCallback;
 
 import org.json.JSONException;
 
@@ -8,7 +7,7 @@ import org.json.JSONException;
  * Created by hyc on 2016/11/10.
  */
 
-public abstract class FileCallback extends AbstractCallback<String> {
+public abstract class FileCallback extends AbstractCallback<String> implements ProgressListener {
     @Override
     protected String bindData(String rawResponse) throws JSONException {
 
@@ -16,6 +15,12 @@ public abstract class FileCallback extends AbstractCallback<String> {
     }
 
     public FileCallback(String path) {
+
         setPath(path);
+    }
+
+    @Override
+    public void onProgress(long currerntCount, long totalCount) {
+
     }
 }
