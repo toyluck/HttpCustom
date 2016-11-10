@@ -2,6 +2,7 @@ package com.example.hyc.httpcustom.source;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 
 import com.example.hyc.httpcustom.utils.esprossoUtils.EsprossoIdelResource;
 
@@ -32,7 +33,25 @@ public class RequestTask {
     private static class DefaultTask implements Runnable {
 
         private final Request _request;
-        private Handler _handler = new Handler(Looper.getMainLooper());
+        static final int SUCCESED = 0x11;
+        static final int FAILUED  = 0x22;
+        Handler _handler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what) {
+                    case SUCCESED:
+                        _request._iCallback.onSuccessed(msg.obj);
+
+                        break;
+                    case FAILUED:
+                        // 处理一些全局的操作
+                        _request.globalCatch((AppException) msg.obj);
+
+                        break;
+                }
+            }
+        };
 
         DefaultTask(Request request) {
             _request = request;
@@ -41,23 +60,12 @@ public class RequestTask {
         @Override
         public void run() {
             try {
-                final HttpURLConnection conn  = HttpConnectUtil.execute(_request);
-                final Object            parse = _request._iCallback.parse(conn);
-                _handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        _request._iCallback.onSuccessed(parse);
-                        EsprossoIdelResource.decrement();
-                    }
-                });
+                final HttpURLConnection conn = HttpConnectUtil.execute(_request);
+                _handler.obtainMessage(SUCCESED, _request._iCallback.parse(conn));
+                EsprossoIdelResource.decrement();
             } catch (final AppException e) {
                 EsprossoIdelResource.decrement();
-                _handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        _request._iCallback.onFailure(e);
-                    }
-                });
+                _handler.obtainMessage(FAILUED, e);
                 e.printStackTrace();
             }
         }

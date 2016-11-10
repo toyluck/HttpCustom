@@ -1,6 +1,8 @@
 package com.example.hyc.httpcustom.source;
 
 
+import android.webkit.URLUtil;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -13,11 +15,15 @@ import java.net.URLConnection;
 
 /**
  * Created by hyc on 16-11-9.
+ *
  */
 public class HttpConnectUtil {
 
     public static HttpURLConnection execute(Request request) throws AppException {
-
+        //todo 进行一些debug的操作:
+        if (!URLUtil.isNetworkUrl(request.getUrl())) {
+            throw new AppException("url does't fit!!!");
+        }
         switch (request.getMethod()) {
             case GET:
                 return get(request);

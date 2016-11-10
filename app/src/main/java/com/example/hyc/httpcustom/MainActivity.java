@@ -19,7 +19,7 @@ import java.io.IOException;
 
 import static com.example.hyc.httpcustom.source.Request.RequestMethod.POST;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         String  downloadpath = file.getAbsolutePath();
         Request request      = new Request.Build().baseUrl(path).method(POST).setContent(content).build();
-
+        request.setGlobalRequestListerner(this);
         request.setiCallback(new FileCallback(downloadpath) {
             @Override
             public void onSuccessed(String response) {

@@ -1,8 +1,5 @@
 package com.example.hyc.httpcustom.source;
 
-import android.support.annotation.VisibleForTesting;
-import android.view.ViewDebug;
-
 /**
  * Created by hyc on 16-11-9.
  */
@@ -14,9 +11,27 @@ public class Request {
     private int    _readTimeout;
     private String _content;
 
+    public void globalCatch(AppException err) {
+        if (_globalRequestListerner == null || !_globalRequestListerner.globalCatchException(err)) {
+            _iCallback.onFailure(err);
+        }
+    }
+
+    private GlobalRequestErrListerner _globalRequestListerner;
+
+    /**
+     * 添加全局的RequestErr处理 ,用来处理比如说 login token的实效等
+     *
+     * @param globalRequestListerner
+     */
+    public void setGlobalRequestListerner(GlobalRequestErrListerner globalRequestListerner) {
+        _globalRequestListerner = globalRequestListerner;
+    }
+
     public enum RequestMethod {
         GET, POST, PUT, DELETE
     }
+
 
     public int getReadTimeout() {
         return _readTimeout;
