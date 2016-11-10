@@ -1,11 +1,15 @@
 package com.example.hyc.httpcustom.models;
 
+import com.example.hyc.httpcustom.source.IEntity;
+import com.google.gson.stream.JsonReader;
+
+import java.io.IOException;
+
 /**
  * Created by hyc on 2016/11/9.
  */
 
-public class User
-{
+public class User implements IEntity {
     public User() {
     }
 
@@ -24,7 +28,7 @@ public class User
      * data : {"token":"@","id":"1","email":"@","avatar":"@","account":"stay4it","username":"stay4it"}
      */
 
-    private int ret;
+    private int      ret;
     private String   msg;
     private UserBean data;
 
@@ -50,6 +54,52 @@ public class User
 
     public void setData(UserBean data) {
         this.data = data;
+    }
+
+    @Override
+    public void readObj(JsonReader reader) throws IOException {
+        reader.beginObject();
+
+        while (reader.hasNext()) {
+            String name = reader.nextName();
+            if ("ret".equals(name)) {
+                this.setRet(reader.nextInt());
+            } else if ("msg".equals(name)) {
+                this.setMsg(reader.nextString());
+            } else if ("data".equals(name)) {
+                this.setData(readUserBean(reader));
+            } else {
+                reader.skipValue();
+            }
+        }
+        reader.endObject();
+    }
+
+    private UserBean readUserBean(JsonReader reader) throws IOException {
+        UserBean userBean = new UserBean();
+        reader.beginObject();
+
+        while (reader.hasNext()) {
+            String name = reader.nextName();
+            String s    = reader.nextString();
+            if ("token".equals(name)) {
+                userBean.token = s;
+            } else if ("id".equals(name)) {
+                userBean.id = s;
+            } else if ("avatar".equals(name)) {
+                userBean.avatar = s;
+            } else if ("account".equals(name)) {
+                userBean.account = s;
+            } else if ("username".equals(name)) {
+                userBean.username = s;
+            } else if ("email".equals(name)) {
+                userBean.email = s;
+            } else {
+                reader.skipValue();
+            }
+        }
+        reader.endObject();
+        return userBean;
     }
 
     public static class UserBean {

@@ -91,7 +91,8 @@ public class HttpConnectUtil {
             //这里请求头要修改  不能为json
             // conn.setRequestProperty("Content-Type", "application/json");
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-
+// TODO: 2016/11/10 添加多文件上传
+            
             OutputStream os = conn.getOutputStream();
             os.write(request.getContent().getBytes());
             os.flush();

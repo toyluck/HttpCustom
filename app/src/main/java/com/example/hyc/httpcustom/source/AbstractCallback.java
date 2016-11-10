@@ -164,6 +164,6 @@ public abstract class AbstractCallback<T> implements ICallback<T> {
         return progressListener;
     }
 
-    protected abstract T bindData(String rawResponse) throws JSONException;
+    protected abstract T bindData(String rawResponse) throws JSONException, AppException;
 
 }

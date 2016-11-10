@@ -10,6 +10,7 @@ import com.example.hyc.httpcustom.models.User;
 import com.example.hyc.httpcustom.source.AppException;
 import com.example.hyc.httpcustom.source.FileCallback;
 import com.example.hyc.httpcustom.source.JsonCallback;
+import com.example.hyc.httpcustom.source.JsonReaderCallback;
 import com.example.hyc.httpcustom.source.Request;
 import com.example.hyc.httpcustom.source.RequestTask;
 import com.example.hyc.httpcustom.utils.esprossoUtils.EsprossoIdelResource;
@@ -45,7 +46,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     private void request(final Button v) {
         String path = "http://www.163.com/";
-        path = "http://api.stay4it2.com/v1/public/core/?service=user.login";
+        path = "http://api.stay4it.com/v1/public/core/?service=user.login";
         String content = "account=stay4it&password=1234562";
         String parent  = getExternalCacheDir() + "/download";
         new File(parent).mkdirs();
@@ -59,15 +60,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         String downloadpath = file.getAbsolutePath();
 
         //get Path
-        path = "https://www.youtube.com";
+//        path = "https://www.youtube.com";
 
-        _request = new Request.Build(this).baseUrl(path).method(GET).setContent(content).build();
+        _request = new Request.Build(this).baseUrl(path).method(POST).setContent(content).build();
         _request.setGlobalRequestListerner(this);
-        _request.setiCallback(new FileCallback(downloadpath) {
-
+        _request.setiCallback(new JsonReaderCallback<User>(downloadpath) {
 
             @Override
-            public void onSuccessed(String response) {
+            public void onSuccessed(User response) {
                 System.out.println("response = " + response);
                 Button tv = v;
                 tv.setText("response");
@@ -79,13 +79,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
             }
 
-            @UiThread
-            @Override
-            public void onProgress(long currerntCount, long totalCount) {
-                super.onProgress(currerntCount, totalCount);
-                System.out.println("currerntCount = [" + currerntCount + "], totalCount = [" + totalCount + "]");
-                System.out.println("Thread.currentThread() = " + Thread.currentThread());
-            }
         });
 
         _request.execute();
