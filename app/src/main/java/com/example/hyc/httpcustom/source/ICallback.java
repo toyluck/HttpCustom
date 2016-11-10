@@ -11,4 +11,5 @@ public interface ICallback<T> {
 
     void onFailure(AppException err);
     T parse(HttpURLConnection connection) throws AppException;
+    void cancelReq() throws AppException;
 }

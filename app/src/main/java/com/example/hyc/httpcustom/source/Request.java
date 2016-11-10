@@ -1,21 +1,43 @@
 package com.example.hyc.httpcustom.source;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Created by hyc on 16-11-9.
  */
 public class Request {
 
     private RequestMethod method;
+    private int           _maxRetryCount;
+    private int           _timeout;
+    private int           _readTimeout;
+    private String        _content;
+    private volatile AtomicBoolean _canceled = new AtomicBoolean(false);
 
-    private int    _timeout;
-    private int    _readTimeout;
-    private String _content;
+
+    public void setCanceled(boolean canceled) {
+        _canceled.set(canceled);
+    }
+
+    public boolean isCanceled() {
+        return _canceled.get();
+    }
+
+    public void checkCanceld() throws AppException {
+        if (_canceled.getAndSet(false)) {
+            _iCallback.cancelReq();
+            throw new AppException(AppException.ExceptionType.CANCELD, "Request has been canceld");
+        }
+
+    }
+
 
     public void globalCatch(AppException err) {
         if (_globalRequestListerner == null || !_globalRequestListerner.globalCatchException(err)) {
             _iCallback.onFailure(err);
         }
     }
+
 
     private GlobalRequestErrListerner _globalRequestListerner;
 
@@ -32,6 +54,9 @@ public class Request {
         GET, POST, PUT, DELETE
     }
 
+    public int getMaxRetryCount() {
+        return _maxRetryCount;
+    }
 
     public int getReadTimeout() {
         return _readTimeout;
@@ -47,13 +72,14 @@ public class Request {
 
     String url;
 
-    Request(String url, RequestMethod method, int timeout, int readTimeout, String content) {
+    Request(String url, RequestMethod method, int timeout, int readTimeout, String content, int maxRetryCount) {
         this.url = url;
         this.method = method;
         _timeout = timeout;
         _readTimeout = readTimeout;
         _content = content;
         _content = content;
+        _maxRetryCount = maxRetryCount;
     }
 
     public ICallback _iCallback;
@@ -81,10 +107,11 @@ public class Request {
         private RequestMethod _method;
         private String        _url;
         private String        content;
+        private int _maxRetryCount = 5;
 
         public Build() {
-            _timeout = 10 * 1000;
-            _readTimeout = 20 * 1000;
+            _timeout = 1 * 1000;
+            _readTimeout = 1 * 1000;
             _method = RequestMethod.GET;
         }
 
@@ -113,12 +140,16 @@ public class Request {
             return this;
         }
 
+        public Build retry(int count) {
+            _maxRetryCount = count;
+            return this;
+        }
 
         public Request build() {
             if (null == _url || "".equals(_url)) {
                 throw new NullPointerException("url can't be null");
             }
-            return new Request(_url, _method, _timeout, _readTimeout, content);
+            return new Request(_url, _method, _timeout, _readTimeout, content, _maxRetryCount);
         }
 
     }

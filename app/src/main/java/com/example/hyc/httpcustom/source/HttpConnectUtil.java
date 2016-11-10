@@ -7,23 +7,25 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.sql.CallableStatement;
 
 /**
  * Created by hyc on 16-11-9.
- *
  */
 public class HttpConnectUtil {
 
     public static HttpURLConnection execute(Request request) throws AppException {
         //todo 进行一些debug的操作:
         if (!URLUtil.isNetworkUrl(request.getUrl())) {
-            throw new AppException("url does't fit!!!");
+            throw new AppException(AppException.ExceptionType.MANUL, "url does't fit!!!");
         }
+        request.checkCanceld();
         switch (request.getMethod()) {
             case GET:
                 return get(request);
@@ -48,9 +50,12 @@ public class HttpConnectUtil {
             conn.setConnectTimeout(request.getTimeout());
             conn.setRequestMethod(request.getMethodName());
             conn.setRequestProperty("Content-Type", "application/json");
+            request.checkCanceld();
             return conn;
+        } catch (InterruptedIOException err) {
+            throw new AppException(AppException.ExceptionType.REQ_TIMEOUT, err);
         } catch (IOException err) {
-            throw new AppException(err.getMessage());
+            throw new AppException(AppException.ExceptionType.SERVECE, err.getMessage());
         }
 
     }
@@ -91,10 +96,12 @@ public class HttpConnectUtil {
             OutputStream os = conn.getOutputStream();
             os.write(request.getContent().getBytes());
             os.flush();
-
+            request.checkCanceld();
             return conn;
+        } catch (InterruptedIOException err) {
+            throw new AppException(AppException.ExceptionType.REQ_TIMEOUT, err);
         } catch (IOException err) {
-            throw new AppException(err);
+            throw new AppException(AppException.ExceptionType.SERVECE, err);
         }
     }
 }

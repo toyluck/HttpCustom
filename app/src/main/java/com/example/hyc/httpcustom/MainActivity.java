@@ -17,9 +17,12 @@ import com.example.hyc.httpcustom.utils.esprossoUtils.EsprossoIdelResource;
 import java.io.File;
 import java.io.IOException;
 
+import static com.example.hyc.httpcustom.source.Request.RequestMethod.GET;
 import static com.example.hyc.httpcustom.source.Request.RequestMethod.POST;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener {
+
+    private Request _request;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +30,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         setContentView(R.layout.activity_main);
 
         findViewById(R.id.btn).setOnClickListener(this);
+        findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                _request.setCanceled(true);
+            }
+        });
     }
 
     @Override
@@ -35,7 +44,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void request(final Button v) {
-        EsprossoIdelResource.increment();
         String path = "http://www.163.com/";
         path = "http://api.stay4it2.com/v1/public/core/?service=user.login";
         String content = "account=stay4it&password=1234562";
@@ -49,9 +57,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             e.printStackTrace();
         }
         String  downloadpath = file.getAbsolutePath();
-        Request request      = new Request.Build().baseUrl(path).method(POST).setContent(content).build();
-        request.setGlobalRequestListerner(this);
-        request.setiCallback(new FileCallback(downloadpath) {
+
+        //get Path
+        path="https://www.youtube.com";
+
+        _request = new Request.Build().baseUrl(path).method(GET).setContent(content).build();
+        _request.setGlobalRequestListerner(this);
+        _request.setiCallback(new FileCallback(downloadpath) {
             @Override
             public void onSuccessed(String response) {
                 System.out.println("response = " + response);
@@ -74,6 +86,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             }
         });
 
-        new RequestTask().addTask(request);
+        new RequestTask().addTask(_request);
     }
 }
