@@ -6,7 +6,6 @@ import android.view.ViewDebug;
 /**
  * Created by hyc on 16-11-9.
  */
-@VisibleForTesting
 public class Request {
 
     private RequestMethod method;
